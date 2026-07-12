@@ -1,2 +1,2 @@
-# TravelNavigator
+# TourEase
 CSE471
