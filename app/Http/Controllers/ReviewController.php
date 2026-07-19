@@ -13,15 +13,8 @@ use Illuminate\View\View;
 
 /**
  * ReviewController
- *
  * Owner: MD. Neamatullah Rahat
- * Feature: Review & Rating System
- *
- * Responsibility: Full CRUD for hotel reviews. Enforces the business rule
- * that only travelers with a COMPLETED booking for a hotel may review it,
- * and that only a review's author (or an Administrator) may edit/delete it.
- * Photo upload logic is delegated to ReviewPhotoUploadService, keeping this
- * controller focused on orchestration, not file-handling details.
+ * Feature: Review & Rating System (Web/Blade version)
  */
 class ReviewController extends Controller
 {
@@ -29,16 +22,9 @@ class ReviewController extends Controller
     {
     }
 
-    /**
-     * List all reviews for a hotel, plus an average rating summary.
-     *
-     * Route: GET /hotels/{hotel}/reviews  (name: reviews.index)
-     */
     public function index(Hotel $hotel): View
     {
-        $reviews = Review::where('hotel_id', $hotel->id)
-            ->latest()
-            ->paginate(10);
+        $reviews = Review::where('hotel_id', $hotel->id)->latest()->paginate(10);
 
         return view('reviews.index', [
             'hotel' => $hotel,
@@ -47,12 +33,6 @@ class ReviewController extends Controller
         ]);
     }
 
-    /**
-     * Show the "submit a review" form — but only if the traveler
-     * actually has a completed booking at this hotel.
-     *
-     * Route: GET /hotels/{hotel}/reviews/create  (name: reviews.create)
-     */
     public function create(Hotel $hotel): View|RedirectResponse
     {
         if (! $this->travelerHasCompletedStay($hotel)) {
@@ -61,7 +41,6 @@ class ReviewController extends Controller
                 ->with('error', 'You can only review hotels after completing a stay there.');
         }
 
-        // Prevent submitting a second review for the same hotel
         $alreadyReviewed = Review::where('hotel_id', $hotel->id)
             ->where('traveler_id', Auth::id())
             ->exists();
@@ -75,15 +54,8 @@ class ReviewController extends Controller
         return view('reviews.create', ['hotel' => $hotel]);
     }
 
-    /**
-     * Store a newly submitted review.
-     *
-     * Route: POST /hotels/{hotel}/reviews  (name: reviews.store)
-     */
     public function store(StoreReviewRequest $request, Hotel $hotel): RedirectResponse
     {
-        // Re-check eligibility server-side even though create() already
-        // gated the form — never trust that a POST only came from our own form.
         if (! $this->travelerHasCompletedStay($hotel)) {
             return redirect()
                 ->route('reviews.index', $hotel)
@@ -92,8 +64,6 @@ class ReviewController extends Controller
 
         $validated = $request->validated();
 
-        // Photo upload is delegated entirely to the service —
-        // controller doesn't know or care about storage disk details.
         $photoPaths = $request->hasFile('photos')
             ? $this->photoUploadService->uploadMany($request->file('photos'))
             : [];
@@ -111,11 +81,6 @@ class ReviewController extends Controller
             ->with('success', 'Your review has been submitted. Thank you!');
     }
 
-    /**
-     * Show the edit form for a review — author only.
-     *
-     * Route: GET /hotels/{hotel}/reviews/{review}/edit  (name: reviews.edit)
-     */
     public function edit(Hotel $hotel, Review $review): View|RedirectResponse
     {
         if (! $this->isReviewOwner($review)) {
@@ -127,11 +92,6 @@ class ReviewController extends Controller
         return view('reviews.edit', ['hotel' => $hotel, 'review' => $review]);
     }
 
-    /**
-     * Update an existing review — author only.
-     *
-     * Route: PUT /hotels/{hotel}/reviews/{review}  (name: reviews.update)
-     */
     public function update(StoreReviewRequest $request, Hotel $hotel, Review $review): RedirectResponse
     {
         if (! $this->isReviewOwner($review)) {
@@ -142,8 +102,6 @@ class ReviewController extends Controller
 
         $validated = $request->validated();
 
-        // Only replace photos if new ones were uploaded — otherwise
-        // keep the existing images untouched.
         $photoPaths = $request->hasFile('photos')
             ? $this->photoUploadService->uploadMany($request->file('photos'))
             : $review->images;
@@ -159,11 +117,6 @@ class ReviewController extends Controller
             ->with('success', 'Your review has been updated.');
     }
 
-    /**
-     * Delete a review — author or Administrator only.
-     *
-     * Route: DELETE /hotels/{hotel}/reviews/{review}  (name: reviews.destroy)
-     */
     public function destroy(Hotel $hotel, Review $review): RedirectResponse
     {
         $isAdmin = Auth::user()->role === 'admin';
@@ -183,12 +136,8 @@ class ReviewController extends Controller
     }
 
     /**
-     * Business rule: a traveler may only review a hotel they've
-     * actually completed a stay at.
-     *
-     * NOTE: This queries the Booking model (owned by Showbhik) read-only.
-     * Assumes Booking has: traveler_id, hotel_id, booking_status = 'Completed'.
-     * If Showbhik's actual field names differ, only this one query needs updating.
+     * Reads Booking model (owned by Showbhik) read-only.
+     * Assumes: traveler_id, hotel_id, booking_status = 'Completed'.
      */
     private function travelerHasCompletedStay(Hotel $hotel): bool
     {
@@ -198,9 +147,6 @@ class ReviewController extends Controller
             ->exists();
     }
 
-    /**
-     * Authorization helper: is the current user the review's author?
-     */
     private function isReviewOwner(Review $review): bool
     {
         return $review->traveler_id === Auth::id();

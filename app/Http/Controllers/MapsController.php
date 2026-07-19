@@ -97,6 +97,16 @@ class MapsController extends Controller
         ]);
     }
 
+    /**
+     * Calculate estimated travel distance and duration between the hotel
+     * and a destination point picked by the traveler (e.g. airport).
+     *
+     * Route: GET /hotels/{hotel}/map/distance  (name: maps.distance)
+     *
+     * Query params:
+     *   destination_lat, destination_lng = coordinates traveler selected
+     *   mode = driving | walking | transit (default driving)
+     */
     public function distance(Request $request, Hotel $hotel): JsonResponse
     {
         $validated = $request->validate([

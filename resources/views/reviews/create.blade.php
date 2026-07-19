@@ -1,13 +1,7 @@
 {{--
     View: reviews/create.blade.php
     Owner: MD. Neamatullah Rahat
-
-    Purpose: Review submission form — interactive 5-star picker
-    (built with vanilla JS, no library dependency) and a multi-photo
-    upload with client-side preview.
-
-    Data expected from ReviewController@create:
-        $hotel -> Hotel model
+    Data expected from ReviewController@create: $hotel
 --}}
 
 @extends('layouts.app')
@@ -20,7 +14,6 @@
     <h1 class="text-xl font-bold text-gray-800 mb-1">Review your stay</h1>
     <p class="text-gray-500 text-sm mb-6">{{ $hotel->hotel_name }}</p>
 
-    {{-- Validation errors --}}
     @if ($errors->any())
         <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
             <ul class="list-disc list-inside">
@@ -34,7 +27,6 @@
     <form action="{{ route('reviews.store', $hotel) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
         @csrf
 
-        {{-- Interactive star rating picker --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
             <div id="star-picker" class="flex gap-1 text-3xl cursor-pointer">
@@ -42,11 +34,9 @@
                     <span class="star text-gray-200 transition" data-value="{{ $i }}">★</span>
                 @endfor
             </div>
-            {{-- Hidden input actually submitted — updated by reviews.js --}}
             <input type="hidden" name="rating" id="rating-input" value="{{ old('rating', '') }}">
         </div>
 
-        {{-- Review text --}}
         <div>
             <label for="review" class="block text-sm font-medium text-gray-700 mb-2">Your Review</label>
             <textarea
@@ -60,7 +50,6 @@
             <p class="text-xs text-gray-400 mt-1">Minimum 10 characters.</p>
         </div>
 
-        {{-- Photo upload with preview --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Add Travel Photos (optional, up to 5)</label>
             <input

@@ -10,16 +10,9 @@ use Tests\TestCase;
 /**
  * MapsControllerTest
  * Owner: MD. Neamatullah Rahat
- *
- * Tests the three Maps feature endpoints. Uses Http::fake() to mock
- * Google's API responses — tests must never call the real Google API
- * (slow, costs quota, and makes tests flaky/non-deterministic).
  */
 class MapsControllerTest extends TestCase
 {
-    /**
-     * A hotel with coordinates should render the map page successfully.
-     */
     public function test_map_page_loads_for_hotel_with_coordinates(): void
     {
         $user = User::factory()->create();
@@ -37,10 +30,6 @@ class MapsControllerTest extends TestCase
         });
     }
 
-    /**
-     * A hotel without coordinates should redirect with an error,
-     * never render a broken map.
-     */
     public function test_map_page_redirects_for_hotel_without_coordinates(): void
     {
         $user = User::factory()->create();
@@ -55,10 +44,6 @@ class MapsControllerTest extends TestCase
         $response->assertSessionHas('error');
     }
 
-    /**
-     * Nearby endpoint should return a clean JSON shape,
-     * built from a faked Google Places response.
-     */
     public function test_nearby_endpoint_returns_places(): void
     {
         Http::fake([
@@ -87,17 +72,10 @@ class MapsControllerTest extends TestCase
         );
 
         $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'count' => 1,
-        ]);
+        $response->assertJson(['success' => true, 'count' => 1]);
         $response->assertJsonPath('places.0.name', 'Test Restaurant');
     }
 
-    /**
-     * Invalid 'type' query param should fail validation, not silently
-     * pass through to Google's API with bad data.
-     */
     public function test_nearby_endpoint_rejects_invalid_type(): void
     {
         $user = User::factory()->create();
@@ -113,25 +91,17 @@ class MapsControllerTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /**
-     * Distance endpoint should return distance/duration text
-     * from a faked Distance Matrix response.
-     */
     public function test_distance_endpoint_returns_distance_and_duration(): void
     {
         Http::fake([
             'maps.googleapis.com/maps/api/distancematrix/*' => Http::response([
-                'rows' => [
-                    [
-                        'elements' => [
-                            [
-                                'status' => 'OK',
-                                'distance' => ['text' => '4.2 km'],
-                                'duration' => ['text' => '12 mins'],
-                            ],
-                        ],
-                    ],
-                ],
+                'rows' => [[
+                    'elements' => [[
+                        'status' => 'OK',
+                        'distance' => ['text' => '4.2 km'],
+                        'duration' => ['text' => '12 mins'],
+                    ]],
+                ]],
             ], 200),
         ]);
 

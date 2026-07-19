@@ -5,25 +5,17 @@ namespace App\Models;
 use MongoDB\Laravel\Eloquent\Model;
 
 /**
- * Review Model
+ * Wishlist Model
  * Owner: MD. Neamatullah Rahat
- * Feature: Review & Rating System
+ * Feature: Wishlist & Saved Trips (Module 3)
  */
-class Review extends Model
+class Wishlist extends Model
 {
-    protected $collection = 'reviews';
+    protected $collection = 'wishlists';
 
     protected $fillable = [
-        'hotel_id',
         'traveler_id',
-        'rating',
-        'review',
-        'images',
-    ];
-
-    protected $casts = [
-        'rating' => 'integer',
-        'images' => 'array',
+        'hotel_id',
     ];
 
     public function hotel()
