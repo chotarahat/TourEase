@@ -2,13 +2,8 @@
     View: reviews/index.blade.php
     Owner: MD. Neamatullah Rahat
 
-    Purpose: Lists all reviews for a hotel with an average rating summary
-    at the top and a "Write a Review" call-to-action.
-
     Data expected from ReviewController@index:
-        $hotel          -> Hotel model
-        $reviews        -> Paginated Review collection
-        $averageRating  -> float|null
+        $hotel, $reviews (paginated), $averageRating
 --}}
 
 @extends('layouts.app')
@@ -18,7 +13,6 @@
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-8">
 
-    {{-- Flash messages --}}
     @if (session('success'))
         <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
             {{ session('success') }}
@@ -30,7 +24,6 @@
         </div>
     @endif
 
-    {{-- Rating summary header --}}
     <div class="bg-white rounded-xl border border-gray-200 p-6 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h1 class="text-xl font-bold text-gray-800">{{ $hotel->hotel_name }} — Reviews</h1>
@@ -55,7 +48,6 @@
         </a>
     </div>
 
-    {{-- Review list --}}
     <div class="space-y-4">
         @forelse ($reviews as $review)
             @include('reviews.partials._review-card', ['review' => $review])
@@ -66,7 +58,6 @@
         @endforelse
     </div>
 
-    {{-- Pagination --}}
     <div class="mt-6">
         {{ $reviews->links() }}
     </div>

@@ -6,23 +6,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * StoreReviewRequest
- *
  * Owner: MD. Neamatullah Rahat
  * Feature: Review & Rating System
- *
- * Responsibility: Validates review submission/update data before it ever
- * reaches ReviewController. Using a Form Request (rather than inline
- * $request->validate()) keeps validation rules reusable between store()
- * and update(), and keeps the controller free of validation clutter —
- * a Laravel best practice for anything beyond 2-3 simple rules.
  */
 class StoreReviewRequest extends FormRequest
 {
-    /**
-     * Authorization is handled explicitly inside ReviewController
-     * (ownership + completed-booking checks), so this just allows
-     * any authenticated user through to those checks.
-     */
     public function authorize(): bool
     {
         return true;
@@ -34,7 +22,7 @@ class StoreReviewRequest extends FormRequest
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'review' => ['required', 'string', 'min:10', 'max:2000'],
             'photos' => ['nullable', 'array', 'max:5'],
-            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'], // 5MB per photo
+            'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 

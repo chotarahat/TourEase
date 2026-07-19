@@ -1,15 +1,7 @@
 {{--
     View: reviews/edit.blade.php
     Owner: MD. Neamatullah Rahat
-
-    Purpose: Edit form for an existing review. Nearly identical to
-    create.blade.php, but pre-fills existing values and shows currently
-    uploaded photos with an option to keep or replace them.
-
-    Data expected from ReviewController@edit:
-        $hotel  -> Hotel model
-        $review -> Review model (must belong to the authenticated user —
-                   enforced in controller before this view ever renders)
+    Data expected from ReviewController@edit: $hotel, $review
 --}}
 
 @extends('layouts.app')
@@ -36,8 +28,6 @@
         @csrf
         @method('PUT')
 
-        {{-- Interactive star rating picker — same widget as create.blade.php,
-             pre-filled with the review's current rating via old()/value fallback --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
             <div id="star-picker" class="flex gap-1 text-3xl cursor-pointer">
@@ -60,8 +50,6 @@
             <p class="text-xs text-gray-400 mt-1">Minimum 10 characters.</p>
         </div>
 
-        {{-- Currently uploaded photos — shown separately from new uploads,
-             since submitting new photos REPLACES these (per ReviewController@update logic) --}}
         @if (!empty($review->images))
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Current Photos</label>

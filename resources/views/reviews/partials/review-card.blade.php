@@ -1,18 +1,12 @@
 {{--
     Partial: reviews/partials/_review-card.blade.php
     Owner: MD. Neamatullah Rahat
-
-    Purpose: Renders a single review — reused inside reviews/index.blade.php
-    and can also be reused later on the Hotel Details page for a
-    "recent reviews" preview, without duplicating markup.
-
     Expects: $review (Review model instance, with ->traveler relationship)
 --}}
 
 <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
     <div class="flex items-start justify-between">
         <div class="flex items-center gap-3">
-            {{-- Traveler avatar placeholder (initials-based, no external dependency) --}}
             <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-semibold text-sm">
                 {{ strtoupper(substr($review->traveler->name ?? 'U', 0, 1)) }}
             </div>
@@ -26,7 +20,6 @@
             </div>
         </div>
 
-        {{-- Star rating display --}}
         <div class="flex items-center gap-0.5" aria-label="{{ $review->rating }} out of 5 stars">
             @for ($i = 1; $i <= 5; $i++)
                 <span class="{{ $i <= $review->rating ? 'text-yellow-400' : 'text-gray-200' }}">★</span>
@@ -38,7 +31,6 @@
         {{ $review->review }}
     </p>
 
-    {{-- Uploaded travel photos, if any --}}
     @if (!empty($review->images))
         <div class="flex gap-2 mt-3 overflow-x-auto">
             @foreach ($review->images as $imagePath)
@@ -51,7 +43,6 @@
         </div>
     @endif
 
-    {{-- Edit/Delete actions — only visible to the review's own author --}}
     @auth
         @if (auth()->id() === $review->traveler_id)
             <div class="flex gap-3 mt-3 pt-3 border-t border-gray-100">

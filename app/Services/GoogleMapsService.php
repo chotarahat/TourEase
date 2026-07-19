@@ -13,27 +13,12 @@ use Illuminate\Support\Facades\Log;
  *
  * Responsibility: The ONLY place in the codebase that talks to Google's
  * APIs for this feature. MapsController never calls Http::get() directly —
- * it calls this service. This isolation means:
- *   (a) if Google's API changes, only this file needs updating
- *   (b) this class can be unit-tested by mocking Http::fake()
- *   (c) matches the project's established Services/ pattern
- *       (StripeService, GmailService, OpenWeatherService, OpenAIService)
+ * it calls this service.
  */
 class GoogleMapsService
 {
-    /**
-     * Base URL for Google Places API (Nearby Search - legacy stable endpoint).
-     */
     protected string $placesBaseUrl = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
-
-    /**
-     * Base URL for Google Distance Matrix API.
-     */
     protected string $distanceBaseUrl = 'https://maps.googleapis.com/maps/api/distancematrix/json';
-
-    /**
-     * The API key, pulled once from config (never hardcoded).
-     */
     protected string $apiKey;
 
     public function __construct()
@@ -44,11 +29,6 @@ class GoogleMapsService
     /**
      * Fetch nearby places of a given type around a coordinate.
      *
-     * @param  float   $latitude
-     * @param  float   $longitude
-     * @param  string  $type      Google Places type: restaurant, hospital,
-     *                            transit_station, shopping_mall, tourist_attraction
-     * @param  int     $radius    Search radius in meters
      * @return array<int, array{name: string, address: string, rating: ?float, lat: float, lng: float, place_id: string}>
      */
     public function getNearbyPlaces(float $latitude, float $longitude, string $type, int $radius = 2000): array
@@ -70,8 +50,6 @@ class GoogleMapsService
 
         $data = $response->json();
 
-        // Google returns 'ZERO_RESULTS' as a valid, non-error status —
-        // must be handled separately from an actual API failure.
         if (($data['status'] ?? null) !== 'OK') {
             if (($data['status'] ?? null) !== 'ZERO_RESULTS') {
                 Log::warning('GoogleMapsService: Places API returned non-OK status', [
@@ -82,8 +60,6 @@ class GoogleMapsService
             return [];
         }
 
-        // Map Google's verbose response into a clean, minimal shape —
-        // the frontend only needs these fields, not Google's full payload.
         return collect($data['results'] ?? [])->map(function (array $place) {
             return [
                 'name' => $place['name'] ?? 'Unnamed',
@@ -99,11 +75,6 @@ class GoogleMapsService
     /**
      * Calculate travel distance and duration between two coordinates.
      *
-     * @param  float   $originLat
-     * @param  float   $originLng
-     * @param  float   $destLat
-     * @param  float   $destLng
-     * @param  string  $mode  driving | walking | transit
      * @return array{distance: string, duration: string}
      */
     public function getDistance(float $originLat, float $originLng, float $destLat, float $destLng, string $mode = 'driving'): array
@@ -130,8 +101,8 @@ class GoogleMapsService
         }
 
         return [
-            'distance' => $element['distance']['text'] ?? 'N/A', // e.g. "4.2 km"
-            'duration' => $element['duration']['text'] ?? 'N/A', // e.g. "12 mins"
+            'distance' => $element['distance']['text'] ?? 'N/A',
+            'duration' => $element['duration']['text'] ?? 'N/A',
         ];
     }
 }
